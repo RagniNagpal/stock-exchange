@@ -1,0 +1,249 @@
+🏦 **Stock Exchange Project — Complete Notes**
+
+---
+
+### 🔹 **Concept Overview**
+
+In a **Stock Exchange**, every trade involves swapping **one asset for another** —
+basically converting one asset type into another.
+
+* **Base Asset:** Stock (e.g., ETH, BTC, TATA, INFY)
+* **Quote Asset:** Currency used for trading (e.g., INR, USD)
+* Example: **ETH-BTC** → 1 ETH is traded in terms of BTC (two-asset market)
+
+---
+
+### 📊 **Core Components of the Market**
+
+#### 1. **Current Price**
+
+Shows the **latest trading price** of the asset.
+
+#### 2. **Order Book**
+
+* Continuously changing list of **buy (bid)** and **sell (ask)** orders.
+* It maintains all open orders that are **not yet matched**.
+
+| Type    | Role   | Meaning                                   |
+| ------- | ------ | ----------------------------------------- |
+| **Bid** | Buyer  | Willing to buy stock at a specific price  |
+| **Ask** | Seller | Willing to sell stock at a specific price |
+
+The **Order Book** maintains liquidity and reflects **real-time market movement**.
+
+---
+
+### ⚙️ **Types of Orders**
+
+#### 🟩 1. **Limit Order**
+
+> Buy or Sell at a specific price only (not the current market price).
+
+* Example:
+  Current price = ₹100
+  You want to buy only if it drops to ₹95 → this is a **limit order**.
+* Execution happens **only when the market price reaches the limit price**.
+
+#### 🟥 2. **Market Order**
+
+> Buy or Sell immediately at the **best available prices**.
+
+* May execute at **multiple prices** to fulfill full quantity.
+* Example: You want 100 shares —
+
+  * 30 shares available at ₹100
+  * 70 shares available at ₹102
+    → order executes in both prices.
+
+---
+
+### 🔁 **When Trade Happens**
+
+A **trade executes** when:
+
+```
+Bid price == Ask price
+```
+
+Then, both orders are matched, and the transaction moves to the **Trade History** section.
+
+---
+
+### 🕯️ **Candlestick Chart (Price Movement)**
+
+Used to visualize stock trends.
+
+| Candle Type         | Condition                     | Meaning         |
+| ------------------- | ----------------------------- | --------------- |
+| 🟢 **Green Candle** | Closing Price > Opening Price | Price Increased |
+| 🔴 **Red Candle**   | Opening Price > Closing Price | Price Decreased |
+
+Each candle also has:
+
+* **Upper Wick (Shadow):** Maximum price of the day
+* **Lower Wick (Shadow):** Minimum price of the day
+
+---
+
+### 💰 **Market Makers**
+
+* Provide **liquidity** in the market (bring buyers and sellers).
+* Stock owners often contact them to **increase liquidity**.
+* More buyers/sellers → Better liquidity → Stable prices.
+* Low liquidity stocks are **risky to trade**.
+
+---
+
+### ⚖️ **Every Order is a Limit Order**
+
+Even **Market Orders** internally act as **Limit Orders** with system-defined limits.
+
+**Example:**
+If multiple sellers exist:
+
+* ₹1cr, ₹1.5cr, ₹2cr, ₹8cr
+
+You have ₹8cr, so you’d prefer to buy from cheaper ones first.
+But if those lower-priced sellers remove their offers,
+then your **Market Order** could buy at ₹8cr → loss.
+
+To avoid this, exchanges apply a **hidden limit** —
+so the order executes only within a safe price band.
+👉 This hidden limit is called a **Quote Order**.
+
+---
+
+### ⚠️ **Circuit Breakers**
+
+| Type              | Meaning                                     |
+| ----------------- | ------------------------------------------- |
+| **Upper Circuit** | No more sellers (price rising continuously) |
+| **Lower Circuit** | No more buyers (price falling continuously) |
+
+These prevent **extreme volatility** in the market.
+
+---
+
+### 🌀 **“Wave” in Market**
+
+* A **single large trader or institution** who buys huge quantities of stock.
+* Causes price manipulation and reduces normal market activity.
+* Such traders can control short-term price movement.
+
+---
+
+## 🧩 **Technical Implementation (Project Architecture)**
+
+### 🧠 **We use Binance API**
+
+* Binance’s APIs are industry standard.
+* We’ll use **same structure, schema, and response format** as Binance.
+* All real-time data (prices, order books, trades) fetched or simulated via these APIs.
+
+---
+
+### ⚡ **Order Book Storage (In-Memory System)**
+
+* Trading requires **millisecond-level performance**.
+* Fetching from database each time = too slow.
+* Therefore, the **Order Book** is maintained **in memory**.
+
+🧠 Example: Redis or in-memory Node.js object.
+
+**Advantage:**
+Ultra-fast matching and order updates.
+
+---
+
+### 🚧 **Difficulties in Implementation**
+
+#### 1. **Scalability Issue**
+
+* Because order books are in-memory,
+  → cannot horizontally scale (multiple servers can’t share same memory easily).
+
+✅ **Solution:**
+
+* Run Order Book as a **separate process/service** (e.g., in Node.js).
+* Communicate via **message queue** (RabbitMQ, Kafka, Redis Streams).
+* Allows scaling by distributing load across multiple order book processes.
+
+---
+
+#### 2. **Data Crash / Fault Tolerance**
+
+* If the in-memory data crashes, all active orders could be lost.
+
+✅ **Solution:**
+
+* Maintain all order events in a **Queue**.
+* If crash occurs → replay events from queue to **restore state**.
+
+---
+
+## 🏗️ **Project Architecture — Step-by-Step Flow**
+
+### 🧩 1. Browser → API Server
+
+User performs Buy/Sell → request sent to API server.
+
+* Server validates and creates an **Order ID**.
+* Order details sent to **Queue** for processing.
+
+---
+
+### 🧩 2. Queue → Order Book Process
+
+The **Order Book Process** (running separately) reads from queue.
+
+* Matches new orders with existing ones.
+* Executes trades or marks pending ones.
+* Updates the in-memory Order Book.
+
+---
+
+### 🧩 3. Order Book → Queue (Updated Data)
+
+* After processing, updated data (trades, pending orders) is sent back to another queue.
+* This ensures **real-time consistency** and **crash recovery**.
+
+---
+
+### 🧩 4. Queue → WebSocket → Browser
+
+* The **WebSocket server** reads the updated data queue.
+* Pushes live data to browsers — showing live prices, order book updates, and trade history instantly.
+
+---
+
+### 🧩 5. Database Sync
+
+* Periodically or after every update,
+  the system stores order/trade history from queue → database (for analytics & record).
+
+---
+
+### 🧱 **Tech Stack (Possible)**
+
+| Layer           | Technology                       |
+| --------------- | -------------------------------- |
+| Backend         | Node.js / Express                |
+| Realtime        | WebSockets                       |
+| Queue           | RabbitMQ / Redis Streams / Kafka |
+| In-Memory Store | Redis / Node.js memory           |
+| Database        | MongoDB / PostgreSQL             |
+| API             | Binance API structure            |
+| Frontend        | React / HTML-CSS-JS              |
+
+---
+
+## ⚡ **Key Takeaways**
+
+* **Every order = Limit order** (market order has hidden limit).
+* **Order Book = In-memory** for high speed.
+* **Queue System = Backbone** for scalability and recovery.
+* **Market Makers = Liquidity providers.**
+* **WebSockets** keep browser data real-time.
+* **Binance API** used for realistic structure & responses.
+
+
