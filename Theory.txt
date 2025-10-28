@@ -247,3 +247,9 @@ The **Order Book Process** (running separately) reads from queue.
 * **Binance API** used for realistic structure & responses.
 
 
+
+//Day2
+
+bids ko desc asks ko asc bids(buyers)
+
+buy >= limit price in sell
