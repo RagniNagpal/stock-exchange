@@ -239,12 +239,12 @@ The **Order Book Process** (running separately) reads from queue.
 
 ## ⚡ **Key Takeaways**
 
-* **Every order = Limit order** (market order has hidden limit).
-* **Order Book = In-memory** for high speed.
-* **Queue System = Backbone** for scalability and recovery.
-* **Market Makers = Liquidity providers.**
-* **WebSockets** keep browser data real-time.
-* **Binance API** used for realistic structure & responses.
+* Every order = Limit order** (market order has hidden limit).
+* Order Book = In-memory for high speed.
+* Queue System = Backbone for scalability and recovery.
+* Market Makers = Liquidity providers.**
+* WebSockets keep browser data real-time.
+* Binance API used for realistic structure & responses.
 
 
 
