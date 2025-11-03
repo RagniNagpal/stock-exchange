@@ -72,28 +72,48 @@ update remainingQty and execQty
 */
 
 // market order hamara create or execute hota hai ismai order book nhi banti 
-_marketMatch(order) {
-  if (order.side == "BUY") {
-    let asksArr = this.ask;
+ _marketMatch(order) {
+    if (order.side === "BUY") {
+      let asksArr = this.ask;
 
-    while (order.remainingQty > 0 && asksArr.length > 0) {
-      let top = asksArr[0];
-      let orderFill = Math.min(order.remainingQty, top.remainingQty);
-      order.execQty = order.execQty + orderFill;
-      order.remainingQty = order.remainingQty - orderFill;
+      while (order.remainingQty > 0 && asksArr.length > 0) {
+        let top = asksArr[0];
+        let orderFill = Math.min(order.remainingQty, top.remainingQty);
 
-      top.execQty = top.execQty + orderFill;
-      top.remainingQty = top.remainingQty - orderFill;
+        order.execQty += orderFill;
+        order.remainingQty -= orderFill;
 
-      // assume order.remaining is still pending (remaining > 0) 
-      if (top.remainingQty == 0) {
-        // shift se remove hota hai or unshift se add hota hai 
-        asksArr.shift()
+        top.execQty += orderFill;
+        top.remainingQty -= orderFill;
+
+        if (top.remainingQty === 0) {
+          asksArr.shift(); // remove fully filled ask
+        }
       }
+      return order;
     }
-    return order;
+
+    if (order.side === "SELL") {
+      let bidsArr = this.bids; // ✅ FIXED (was this.bid before)
+
+      while (order.remainingQty > 0 && bidsArr.length > 0) {
+        let top = bidsArr[0];
+        let orderFill = Math.min(order.remainingQty, top.remainingQty);
+
+        order.execQty += orderFill;
+        order.remainingQty -= orderFill;
+
+        top.execQty += orderFill;
+        top.remainingQty -= orderFill;
+
+        if (top.remainingQty === 0) {
+          bidsArr.shift(); // remove fully filled bid
+        }
+      }
+      return order;
+    }
   }
-}
+
 
 // execute order if it a limit order  (limit order hamara order book mai show hota hai )
 /* pehle ka toh market match wala hi same hai */

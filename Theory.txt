@@ -253,3 +253,17 @@ The **Order Book Process** (running separately) reads from queue.
 bids ko desc asks ko asc bids(buyers)
 
 buy >= limit price in sell
+
+
+
+  Pub/sub=> publisher and subscriber design pattern which we used for real-time updates, communication bw multiple component in microservice architecture without knowing each other or having any direct connection
+
+  1. Monolith-> cannot scale a particular component sava server scale karna padega
+  2. Microservice-> har cheez ke liye alag server 
+  3 methods to comm kafka and blog -> 1. api, 2. socket, 3. pubsub
+
+  pubsub have channel -  which have connection with publisher and subscriber
+  pubsub has fire and forget...........eq agar 9 bje ek show start ua usne gana bhej diya 9:15 par subscribe  to isko gana nhi milega ....kyunki subsribe nhi kiya usne 
+
+  bina client -> web socket
+  client ke saath-> polling
